@@ -1,15 +1,12 @@
-from django.shortcuts import render
-from django.http import HttpResponseRedirect
-# <HINT> Import any new Models here
-from django.shortcuts import render, get_object_or_404
+import logging
+import sys
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-# Importación de todos los modelos requeridos para la tarea
+from django.views import generic  # <-- Esta es la línea que faltaba
 from .models import Course, Enrollment, Question, Choice, Submission
-# Get an instance of a logger
-logger = logging.getLogger(__name__)
-# Create your views here.
 
+# El resto de tu código hacia abajo se queda exactamente igual...
 
 def registration_request(request):
     context = {}

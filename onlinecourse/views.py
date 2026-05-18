@@ -1,13 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 # <HINT> Import any new Models here
-from .models import Course, Enrollment
-from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.views import generic
-from django.contrib.auth import login, logout, authenticate
-import logging
+# Importación de todos los modelos requeridos para la tarea
+from .models import Course, Enrollment, Question, Choice, Submission
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -180,4 +178,25 @@ def show_exam_result(request, course_id, submission_id):
         'total_grade': total_grade,
     }
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
+
+def submit(request, course_id):
+    course = get_object_or_404(Course, pk=course_id)
+    user = request.user
+
+    # 1. Obtener la matrícula asociada al usuario y al curso
+    enrollment = Enrollment.objects.get(user=user, course=course)
+
+    # 2. Crear un nuevo objeto de entrega (Submission)
+    submission = Submission.objects.create(enrollment=enrollment)
+
+    # 3. Extraer los IDs de las opciones seleccionadas del request.POST
+    selected_choice_ids = [value for key, value in request.POST.items() if 'choice_' in key]
+    choices = Choice.objects.filter(id__in=selected_choice_ids)
+
+    # 4. Asociar las opciones seleccionadas a la entrega
+    submission.choices.set(choices)
+    submission_id = submission.id
+
+    # 5. Redirigir a la vista de resultados usando la función reverse
+    return HttpResponseRedirect(reverse(viewname='onlinecourse:exam_result', args=(course_id, submission_id,)))
 

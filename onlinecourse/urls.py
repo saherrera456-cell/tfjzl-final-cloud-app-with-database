@@ -9,6 +9,8 @@ urlpatterns = [
     # view refers to the view function
     # name the URL
 # Rutas para el examen (Añadir dentro de urlpatterns)
+# Ruta para procesar el envío del examen
+    path('<int:course_id>/submit/', views.submit, name='submit'),
     path('course/<int:course_id>/submit/', views.submit, name='submit'),
     path('course/<int:course_id>/submission/<int:submission_id>/result/', views.show_exam_result, name='show_exam_result'),
     path(route='', view=views.CourseListView.as_view(), name='index'),

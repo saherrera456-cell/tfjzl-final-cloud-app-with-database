@@ -6,42 +6,60 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
+<nav class="navbar navbar-light bg-light shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'onlinecourse:popular_course_list' %}">Online Course Platform</a>
+        <span class="navbar-text">Logged in as <b>{{ user.username }}</b></span>
+    </div>
+</nav>
+
 <div class="container mt-5">
-    <div class="card text-center">
-        <div class="card-header bg-success text-white">
-            <h2>Exam Results for {{ course.name }}</h2>
+    <div class="card text-center shadow">
+        <div class="card-body p-5">
+            {% if grade >= 50 %}
+                <div class="alert alert-success p-4" role="alert">
+                    <h2 class="alert-heading display-4">Success!</h2>
+                    <p class="lead"><b>Congratulations, {{ user.first_name }}!</b> You have passed the exam and completed the course with score {{ grade }}/100</p>
+                </div>
+            {% else %}
+                <div class="alert alert-danger p-4" role="alert">
+                    <h2 class="alert-heading display-4">Failed</h2>
+                    <p class="lead"><b>Failed</b> Sorry, {{ user.first_name }}! You have failed the exam with score {{ grade }}/100</p>
+                    <a href="{% url 'onlinecourse:course_details' course.id %}" class="btn btn-warning btn-lg mt-3">Retake Exam</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <h3 class="mt-5 mb-3 text-secondary">Detailed Exam Results Review:</h3>
+    
+    {% for question in course.question_set.all %}
+    <div class="card mt-3 shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5>{{ question.content }}</h5>
         </div>
         <div class="card-body">
-            <h1 class="text-success display-4">Congratulations!</h1>
-            <p class="lead">You have successfully completed the mock exam attempt.</p>
-            
-            <div class="alert alert-info mt-4">
-                <h4>Your Score: <strong>{{ total_score }}</strong> / {{ total_grade }}</h4>
-            </div>
-
-            <div class="text-left mt-5">
-                <h3>Review Your Submission:</h3>
-                {% for question in course.question_set.all %}
-                    <div class="card mt-3">
-                        <div class="card-header"><h5>{{ question.content }}</h5></div>
-                        <div class="card-body">
-                            <ul>
-                            {% for choice in question.choice_set.all %}
-                                <li>
-                                    {{ choice.content }} 
-                                    {% if choice.is_correct %}
-                                        <span class="badge badge-success">Correct Answer</span>
-                                    {% endif %}
-                                </li>
-                            {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
+            <div class="form-group">
+                {% for choice in question.choice_set.all %}
+                <div class="form-check my-2 p-2 rounded border" style="background-color: #fdfdfd;">
+                    {% if choice.is_correct and choice in choices %}
+                        <div class="text-success font-weight-bold">✓ Correct answer: {{ choice.content }}</div>
+                    {% elif choice.is_correct and not choice in choices %}
+                        <div class="text-warning font-weight-bold">⚠ Not selected: {{ choice.content }}</div>
+                    {% elif not choice.is_correct and choice in choices %}
+                        <div class="text-danger font-weight-bold">✗ Wrong answer: {{ choice.content }}</div>
+                    {% else %}
+                        <div class="text-muted">{{ choice.content }}</div>
+                    {% endif %}
+                </div>
                 {% endfor %}
             </div>
-            
-            <a href="{% url 'onlinecourse:popular_course_list' %}" class="btn btn-primary btn-lg mt-4">Back to Courses</a>
         </div>
+    </div>
+    {% endfor %}
+
+    <div class="text-center my-5">
+        <a href="{% url 'onlinecourse:popular_course_list' %}" class="btn btn-primary btn-lg">Back to Course Home</a>
     </div>
 </div>
 </body>

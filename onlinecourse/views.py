@@ -36,6 +36,33 @@ def registration_request(request):
             context['message'] = "User already exists."
             return render(request, 'onlinecourse/user_registration_bootstrap.html', context)
 
+# Reemplaza o edita esta función en tu .\onlinecourse\views.py
+def show_exam_result(request, course_id, submission_id):
+    course = get_object_or_404(Course, pk=course_id)
+    submission = get_object_or_404(Submission, pk=submission_id)
+    
+    total_score = 0
+    total_grade = 0
+    
+    # Calcular puntaje acumulado
+    for question in course.question_set.all():
+        total_grade += question.grade
+        selected_ids = submission.choices.filter(question=question).values_list('id', flat=True)
+        if question.is_get_score(selected_ids):
+            total_score += question.grade
+            
+    # Mapear el puntaje a una escala de 100 puntos exigida por la plantilla
+    grade = int((total_score / total_grade) * 100) if total_grade > 0 else 0
+    
+    # Obtener el listado real de objetos Choice que seleccionó el alumno
+    choices = submission.choices.all()
+    
+    context = {
+        'course': course,
+        'grade': grade,
+        'choices': choices
+    }
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
 
 def login_request(request):
     context = {}

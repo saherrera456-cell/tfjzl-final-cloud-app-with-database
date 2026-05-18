@@ -186,20 +186,25 @@ def show_exam_result(request, course_id, submission_id):
     total_score = 0
     total_grade = 0
     
-    # Evaluar las respuestas usando el método is_get_score del modelo Question
+    # Calcular el puntaje acumulado recorriendo las preguntas
     for question in course.question_set.all():
         total_grade += question.grade
-        # Extraer las opciones seleccionadas por el alumno que corresponden a ESTA pregunta
+        # Obtener las opciones que el usuario seleccionó para ESTA pregunta
         selected_ids = submission.choices.filter(question=question).values_list('id', flat=True)
-        
         if question.is_get_score(selected_ids):
             total_score += question.grade
             
+    # Calcular la nota final sobre una escala de 100 puntos
+    grade = int((total_score / total_grade) * 100) if total_grade > 0 else 0
+    
+    # Extraer todas las opciones seleccionadas en la entrega
+    choices = submission.choices.all()
+    
+    # Pasar los datos con las llaves exactas que pide la plantilla de la Task 6
     context = {
         'course': course,
-        'submission': submission,
-        'total_score': total_score,
-        'total_grade': total_grade,
+        'grade': grade,
+        'choices': choices
     }
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
 

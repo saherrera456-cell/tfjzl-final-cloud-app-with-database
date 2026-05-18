@@ -9,6 +9,7 @@ urlpatterns = [
     path('registration/', views.registration_request, name='registration'),
     path('login/', views.login_request, name='login'),
     path('logout/', views.logout_request, name='logout'),
+    path('<int:course_id>/enroll/', views.enroll, name='enroll'), # <-- ¡Esta es la que faltaba!
     
     # Rutas del sistema de exámenes (Task 5 y Task 6)
     path('<int:course_id>/submit/', views.submit, name='submit'),

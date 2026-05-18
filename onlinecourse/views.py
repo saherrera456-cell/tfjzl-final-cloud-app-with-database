@@ -132,5 +132,52 @@ def extract_answers(request):
         # Calculate the total score
 #def show_exam_result(request, course_id, submission_id):
 
+# Agrega estos métodos al final de .\onlinecourse\views.py
 
+from django.shortcuts import get_object_or_404, render, redirect
+from .models import Course, Submission, Enrollment, Choice
+
+def submit(request, course_id):
+    course = get_object_or_404(Course, pk=course_id)
+    if request.method == 'POST':
+        # Obtener la matrícula del usuario actual para este curso
+        enrollment = get_object_or_404(Enrollment, course=course, user=request.user)
+        
+        # Crear la entrega (Submission)
+        submission = Submission.objects.create(enrollment=enrollment)
+        
+        # Revisar cuáles opciones fueron marcadas en el HTML
+        for question in course.question_set.all():
+            for choice in question.choice_set.all():
+                # Si el ID del checkbox está en los datos enviados por el formulario
+                if f'choice_{choice.id}' in request.POST:
+                    submission.choices.add(choice)
+                    
+        submission.save()
+        # Redirigir a la vista de resultados pasándole el ID de la entrega
+        return redirect('onlinecourse:show_exam_result', course_id=course.id, submission_id=submission.id)
+
+def show_exam_result(request, course_id, submission_id):
+    course = get_object_or_404(Course, pk=course_id)
+    submission = get_object_or_404(Submission, pk=submission_id)
+    
+    total_score = 0
+    total_grade = 0
+    
+    # Evaluar las respuestas usando el método is_get_score del modelo Question
+    for question in course.question_set.all():
+        total_grade += question.grade
+        # Extraer las opciones seleccionadas por el alumno que corresponden a ESTA pregunta
+        selected_ids = submission.choices.filter(question=question).values_list('id', flat=True)
+        
+        if question.is_get_score(selected_ids):
+            total_score += question.grade
+            
+    context = {
+        'course': course,
+        'submission': submission,
+        'total_score': total_score,
+        'total_grade': total_grade,
+    }
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
 

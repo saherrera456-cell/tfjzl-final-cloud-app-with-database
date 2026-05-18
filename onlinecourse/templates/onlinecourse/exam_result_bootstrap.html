@@ -2,54 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    {% load static %}
+    <title>Exam Result</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-
- <nav class="navbar navbar-light bg-light">
-    <div class="container-fluid">
-        <div class="navbar-header">
-              <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
+<div class="container mt-5">
+    <div class="card text-center">
+        <div class="card-header bg-success text-white">
+            <h2>Exam Results for {{ course.name }}</h2>
         </div>
-        <ul class="nav navbar-nav navbar-right">
-            {% if user.is_authenticated %}
-            <li>
-                <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
-                <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
-            </li>
-            {% else %}
-            <li>
-                <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
-                    {% csrf_token %}
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Username" name="username" >
-                        <input type="password" class="form-control" placeholder="Username" name="psw" >
-                        <button class="btn btn-primary" type="submit">Login</button>
-                        <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
+        <div class="card-body">
+            <h1 class="text-success display-4">Congratulations!</h1>
+            <p class="lead">You have successfully completed the mock exam attempt.</p>
+            
+            <div class="alert alert-info mt-4">
+                <h4>Your Score: <strong>{{ total_score }}</strong> / {{ total_grade }}</h4>
+            </div>
+
+            <div class="text-left mt-5">
+                <h3>Review Your Submission:</h3>
+                {% for question in course.question_set.all %}
+                    <div class="card mt-3">
+                        <div class="card-header"><h5>{{ question.content }}</h5></div>
+                        <div class="card-body">
+                            <ul>
+                            {% for choice in question.choice_set.all %}
+                                <li>
+                                    {{ choice.content }} 
+                                    {% if choice.is_correct %}
+                                        <span class="badge badge-success">Correct Answer</span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        </div>
                     </div>
-                </form>
-            </li>
-            {% endif %}
-        </ul>
-    </div>
-</nav>
-
-<div class="container-fluid">
-    {% if grade > 80 %}
-    <div class="alert alert-success">
-       <!--HINT Display passed info -->
-    </div>
-        {% else %}
-        <div class="alert alert-danger">
-            <!--HINT Display failed info -->
-        </div>
-        <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course.id %}">Re-test</a>
-        {% endif %}
-        <div class="card-columns-vertical mt-1">
-        <h5 class="">Exam results</h5>
-            <!--HINT Display exam results-->
+                {% endfor %}
+            </div>
+            
+            <a href="{% url 'onlinecourse:popular_course_list' %}" class="btn btn-primary btn-lg mt-4">Back to Courses</a>
         </div>
     </div>
+</div>
 </body>
 </html>
